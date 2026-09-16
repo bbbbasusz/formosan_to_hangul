@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대만원주민어 → 한글 변환기</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+    --accent: #0f766e;
+    --accent-light: #ccfbf1;
+    --accent-hover: #0d9488;
+    --green: #059669;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 1.5rem 1rem 3rem;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; position: relative; }
+  .lang-select {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    color: var(--text);
+  }
+  header { margin-bottom: 0.75rem; text-align: center; padding-top: 0.25rem; }
+  h1 { font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: 0.35rem; }
+  .tribes-short {
+    margin: 0.75rem auto 1.25rem;
+    max-width: 42em;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.85;
+  }
+  .tribes-short span {
+    cursor: pointer;
+    padding: 0.1rem 0.15rem;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .tribes-short span:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+  .tribes-short span.active {
+    background: var(--accent);
+    color: white;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .label-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .label-row > label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 0;
+  }
+  .switch-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .case-note {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-right: 0.15rem;
+  }
+  .switch {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    background: #cbd5e1;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .switch.on { background: var(--accent); }
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .switch.on::after { transform: translateX(14px); }
+  .info-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.7rem;
+    cursor: pointer;
+    padding: 0 0.1rem;
+  }
+  .info-btn:hover { color: var(--accent); }
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    resize: vertical;
+    background: #f8fafc;
+    color: var(--text);
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+  /* special char keyboard */
+  .char-kb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+  }
+  .char-kb button {
+    min-width: 2rem;
+    padding: 0.3rem 0.45rem;
+    font-size: 0.9rem;
+    background: #f1f5f9;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+  }
+  .digraph-kb button {
+    background: #ecfdf5;
+    border-color: #99f6e4;
+    color: #0f766e;
+    font-weight: 700;
+  }
+  .char-kb button:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .result {
+    min-height: 90px;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #134e4a;
+    word-break: keep-all;
+    white-space: pre-wrap;
+  }
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  button {
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn-copy { background: var(--accent); color: white; }
+  .btn-copy:hover { background: var(--accent-hover); }
+  .btn-copy.copied { background: var(--green); }
+  .btn-clear { background: #f1f5f9; color: var(--muted); }
+  .btn-clear:hover { background: #e2e8f0; }
+  .example-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .btn-shuffle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #f1f5f9;
+    color: var(--text);
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+  }
+  .btn-shuffle:hover { background: #e2e8f0; }
+  .btn-shuffle svg { width: 14px; height: 14px; }
+  .example-chip {
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: white;
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .example-chip .lang { color: var(--accent); font-weight: 600; margin-right: 0.25rem; }
+  .source-note { font-size: 0.7rem; color: #94a3b8; margin-top: 0.35rem; }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+  .pipeline-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .pipeline-toggle:hover { color: var(--accent); }
+  .pipeline-body { display: none; margin-top: 0.75rem; }
+  .pipeline-body.open { display: block; }
+  .steps {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  @media (min-width: 640px) {
+    .steps { grid-template-columns: repeat(3, 1fr); }
+  }
+  .step {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+  }
+  .step-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .step-body {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    color: var(--text);
+    word-break: break-all;
+    max-height: 80px;
+    overflow-y: auto;
+  }
+  .alpha-section h2 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text); }
+  .alpha-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 0.4rem;
+  }
+  .alpha-item {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.3rem;
+    text-align: center;
+    font-size: 0.75rem;
+  }
+  .alpha-item .lat { font-weight: 700; color: var(--accent); display: block; }
+  .alpha-item .hang { color: var(--muted); font-size: 0.7rem; }
+  .alpha-note { font-size: 0.75rem; color: var(--muted); margin-top: 0.75rem; line-height: 1.6; }
+  .tribes-full {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .tribes-full strong { color: var(--text); }
+  footer { text-align: center; margin-top: 1.5rem; font-size: 0.75rem; color: var(--muted); }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.4);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 360px;
+    width: 100%;
+    padding: 1.25rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  }
+  .modal h3 { font-size: 0.95rem; margin-bottom: 0.6rem; }
+  .modal p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; white-space: pre-line; }
+  .modal-close {
+    margin-top: 1rem;
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    padding: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <select id="uiLang" class="lang-select" title="Language">
+    <option value="ko">한국어</option>
+    <option value="en">English</option>
+    <option value="zh">中文</option>
+  </select>
+
+  <header>
+    <h1 id="t-title">대만 원주민어 → 한글 변환기</h1>
+  </header>
+
+  <p class="tribes-short" id="tribesList">
+    <span data-tribe="unified" class="active">통합</span> ·
+    <span data-tribe="Amis">아미스</span> ·
+    <span data-tribe="Atayal">타얄</span> ·
+    <span data-tribe="Paiwan">파이완</span> ·
+    <span data-tribe="Bunun">부눈</span> ·
+    <span data-tribe="Rukai">루카이</span> ·
+    <span data-tribe="Tsou">초우</span> ·
+    <span data-tribe="Yami">야미</span> ·
+    <span data-tribe="Thao">사오</span> ·
+    <span data-tribe="Seediq">서디크</span><br>
+    <span data-tribe="Truku">트루쿠</span> ·
+    <span data-tribe="Kavalan">커발란</span> ·
+    <span data-tribe="Sakizaya">사키자야</span> ·
+    <span data-tribe="Puyuma">피누유마얀</span> ·
+    <span data-tribe="Saisiyat">샤이시야트</span> ·
+    <span data-tribe="Kanakanavu">카나카나부</span> ·
+    <span data-tribe="Saaroa">흘라알루아</span>
+  </p>
+
+  <div class="card">
+    <div class="label-row">
+      <label for="inputText" id="t-inputLabel">원문 (로마자)</label>
+      <!-- e switch -->
+      <div class="switch-group">
+        <span id="t-eLabel">e→ㅓ</span>
+        <div class="switch" id="swE" title="e → ㅔ"></div>
+        <span id="t-eLabel2">ㅔ</span>
+        <button class="info-btn" id="infoE" type="button">ⓘ</button>
+      </div>
+      <!-- case note left of S/R -->
+      <span class="case-note" id="t-caseNote">대소문자 구분</span>
+      <!-- S -->
+      <div class="switch-group">
+        <span>S→</span>
+        <div class="switch" id="swS" title="Saisiyat S"></div>
+        <span id="t-sState">=s</span>
+        <button class="info-btn" id="infoS" type="button">ⓘ</button>
+      </div>
+      <!-- R -->
+      <div class="switch-group">
+        <span>R→</span>
+        <div class="switch" id="swR" title="Kavalan R"></div>
+        <span id="t-rState">=r</span>
+        <button class="info-btn" id="infoR" type="button">ⓘ</button>
+      </div>
+    </div>
+    <textarea id="inputText" spellcheck="false" placeholder=""></textarea>
+
+    <!-- special character keyboard -->
+    <div class="char-kb" id="charKb">
+      <button type="button" data-ch="ʼ">ʼ</button>
+      <button type="button" data-ch="^">^</button>
+      <button type="button" data-ch=":">:</button>
+      <button type="button" data-ch="ṟ">ṟ</button>
+      <button type="button" data-ch="_">_</button>
+      <button type="button" data-ch="ē">ē</button>
+      <button type="button" data-ch="é">é</button>
+      <button type="button" data-ch="ɨ">ɨ</button>
+      <button type="button" data-ch="ʉ">ʉ</button>
+      <button type="button" data-ch=".">.</button>
+      <button type="button" data-ch="-">-</button>
+    </div>
+    <div class="char-kb digraph-kb" id="digraphKb" style="display:none"></div>
+
+    <div class="example-row">
+      <button class="btn-shuffle" id="btnNewExample" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 3 21 3 21 8"></polyline>
+          <line x1="4" y1="20" x2="21" y2="3"></line>
+          <polyline points="21 16 21 21 16 21"></polyline>
+          <line x1="15" y1="15" x2="21" y2="21"></line>
+          <line x1="4" y1="4" x2="9" y2="9"></line>
+        </svg>
+        <span id="t-exampleBtn">예시</span>
+      </button>
+      <span class="example-chip"><span class="lang" id="exampleLang"></span><span id="exampleText"></span></span>
+    </div>
+    <p class="source-note" id="t-source">예문 출처: 族語E樂園 (web.klokah.tw) · 原住民族語言線上辭典</p>
+    <div class="meta">
+      <span id="charCount">글자 수: 0</span>
+      <span>Script: Latn</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <label id="t-resultLabel">한글 변환 결과</label>
+    <div class="result" id="outputText"></div>
+    <div class="actions">
+      <button class="btn-copy" id="btnCopy" type="button"><span id="t-copy">복사</span></button>
+      <button class="btn-clear" id="btnClear" type="button"><span id="t-clear">지우기</span></button>
+    </div>
+    <div class="meta">
+      <span id="syllCount">변환 음절: 0</span>
+      <span style="color:var(--green)" id="t-live">실시간 작동 중</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="pipeline-toggle" id="pipelineToggle">
+      <span id="pipeIcon">▶</span>
+      <span id="t-pipeline">단계별 파이프라인</span>
+    </div>
+    <div class="pipeline-body" id="pipelineBody">
+      <div class="steps">
+        <div class="step">
+          <div class="step-title">1. vars</div>
+          <div class="step-body" id="step1">-</div>
+        </div>
+        <div class="step">
+          <div class="step-title">2. rewrite</div>
+          <div class="step-body" id="step2">-</div>
+        </div>
+        <div class="step">
+          <div class="step-title">3. transcribe</div>
+          <div class="step-body" id="step3">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card alpha-section">
+    <h2 id="t-alpha">원주민어 로마자 알파벳 일람</h2>
+    <div class="alpha-grid" id="alphaGrid"></div>
+    <p class="alpha-note" id="t-alphaNote">
+      · 이중문자(언어별): ae 샤이시야트 · dh 루카이 · dj/tj 파이완 · dr/lr/tr 루카이·파이완·피누유마얀 · hl 흘라알루아 · lh 사오·피누유마얀 · lj 파이완 · ng(다수) · oe 샤이시야트 · sh 사오 · th 루카이·사오<br>· 해당 언어가 아니면 이중문자를 두 글자로 처리<br>
+      · 특수: ’ / ^ (성문 파열음), ɨ / ʉ (중설 모음)<br>
+      · 자음군 예: kl→클, pl→플 · 대소문자 구분 (S≠s, R≠r)
+    </p>
+  </div>
+
+  <div class="tribes-full">
+    <strong id="t-tribesFull">원주민족 명칭 (한·영·중)</strong><br>
+    루카이 (Rukai, 魯凱) · 부눈 (Bunun, 布農) · 사오 (Thao, 邵) · 사키자야 (Sakizaya, 撒奇萊雅) · 샤이시야트 (Saisiyat, 賽夏) · 서디크 (Seediq, 賽德克) · 아미스 (Amis, 阿美) · 야미 (Yami, 達悟) · 초우 (Tsou, 鄒) · 카나카나부 (Kanakanavu, 卡那卡那富) · 커발란 (Kavalan, 噶瑪蘭) · 타얄 (Atayal, 泰雅) · 트루쿠 (Truku, 太魯閣) · 파이완 (Paiwan, 排灣) · 피누유마얀 (Puyuma, 卑南) · 흘라알루아 (Saaroa, 拉阿魯哇)
+  </div>
+
+  <footer id="t-footer">대만 원주민어 로마자-한글 변환기</footer>
+</div>
+
+<div class="modal-overlay" id="modalE">
+  <div class="modal">
+    <h3 id="modalE-title">e 변환 안내</h3>
+    <p id="modalE-body"></p>
+    <button class="modal-close" id="modalE-close" type="button">닫기</button>
+  </div>
+</div>
+<div class="modal-overlay" id="modalS">
+  <div class="modal">
+    <h3 id="modalS-title">S 대소문자</h3>
+    <p id="modalS-body"></p>
+    <button class="modal-close" id="modalS-close" type="button">닫기</button>
+  </div>
+</div>
+<div class="modal-overlay" id="modalR">
+  <div class="modal">
+    <h3 id="modalR-title">R 대소문자</h3>
+    <p id="modalR-body"></p>
+    <button class="modal-close" id="modalR-close" type="button">닫기</button>
+  </div>
+</div>
+
+<script>
+const I18N = {
+  ko: {
+    title: "대만 원주민어 → 한글 변환기",
+    inputLabel: "원문 (로마자)",
+    eLabel: "e→ㅓ", eLabel2: "ㅔ",
+    exampleBtn: "예시",
+    caseNote: "대소문자 구분",
+    source: "예문 출처: 族語E樂園 (web.klokah.tw) · 原住民族語言線上辭典",
+    resultLabel: "한글 변환 결과",
+    copy: "복사", clear: "지우기", live: "실시간 작동 중",
+    pipeline: "단계별 파이프라인",
+    alpha: "원주민어 로마자 알파벳 일람",
+    alphaNote: "· 이중자음/모음: dr, dj, dh, lr, hl, lh, lj, ng, th, tr, tj, sh, oe, ae\n· 특수: ’ / ^ (성문 파열음), ɨ / ʉ (중설 모음)\n· 자음군 예: kl→클, pl→플 · 대소문자 구분 (S≠s, R≠r)",
+    tribesFull: "원주민족 명칭 (한·영·중)",
+    footer: "대만 원주민어 로마자-한글 변환기",
+    placeholder: "변환할 대만 원주민어 로마자를 입력하세요...",
+    charCount: n => `글자 수: ${n}`,
+    syllCount: n => `변환 음절: ${n}`,
+    modalE: "꺼짐(기본): e → ㅓ\n해당 민족: 루카이, 사키자야, 샤이시야트, 야미, 커발란, 트루쿠, 피누유마얀, 부눈, 서디크\n\n켜짐: e → ㅔ\n해당 민족: 아미스, 초우, 카나카나부, 타얄, 파이완",
+    modalS: "꺼짐(=s): 대문자 S도 s와 같이 처리\n켜짐(≠s): 샤이시야트(Saisiyat) 대문자 S를 별도 음소(ш)로 처리",
+    modalR: "꺼짐(=r): 대문자 R도 r과 같이 처리\n켜짐(≠r): 커발란(Kavalan) 대문자 R을 별도 음소로 처리",
+    close: "닫기",
+    sOff: "=s", sOn: "≠s", rOff: "=r", rOn: "≠r",
+    tribes: { unified:"통합", Amis:"아미스", Atayal:"타얄", Paiwan:"파이완", Bunun:"부눈", Puyuma:"피누유마얀", Rukai:"루카이", Tsou:"초우", Saisiyat:"샤이시야트", Yami:"야미", Seediq:"서디크", Truku:"트루쿠", Kavalan:"커발란", Sakizaya:"사키자야", Thao:"사오", Kanakanavu:"카나카나부", Saaroa:"흘라알루아" }
+  },
+  en: {
+    title: "Formosan → Hangul Converter",
+    inputLabel: "Input (Latin)",
+    eLabel: "e→ㅓ", eLabel2: "ㅔ",
+    exampleBtn: "Example",
+    caseNote: "Case",
+    source: "Examples: Klokah · ILRDF e-dictionary",
+    resultLabel: "Hangul Output",
+    copy: "Copy", clear: "Clear", live: "Live",
+    pipeline: "Pipeline steps",
+    alpha: "Formosan Latin alphabet",
+    alphaNote: "· Digraphs: dr, dj, dh, lr, hl, lh, lj, ng, th, tr, tj, sh, oe, ae\n· Special: ’ / ^ (glottal), ɨ / ʉ\n· Clusters: kl→클, pl→플 · Case (S≠s, R≠r)",
+    tribesFull: "Indigenous peoples (KO · EN · ZH)",
+    footer: "Formosan Latin–Hangul Converter",
+    placeholder: "Enter Formosan Latin orthography...",
+    charCount: n => `Chars: ${n}`,
+    syllCount: n => `Syllables: ${n}`,
+    modalE: "Off (default): e → ㅓ\nTribes: Rukai, Sakizaya, Saisiyat, Yami, Kavalan, Truku, Puyuma, Bunun, Seediq\n\nOn: e → ㅔ\nTribes: Amis, Tsou, Kanakanavu, Atayal, Paiwan",
+    modalS: "Off (=s): capital S treated as s\nOn (≠s): Saisiyat capital S as distinct phoneme (ш)",
+    modalR: "Off (=r): capital R treated as r\nOn (≠r): Kavalan capital R as distinct phoneme",
+    close: "Close",
+    sOff: "=s", sOn: "≠s", rOff: "=r", rOn: "≠r",
+    tribes: { unified:"Unified", Amis:"Amis", Atayal:"Atayal", Paiwan:"Paiwan", Bunun:"Bunun", Puyuma:"Puyuma", Rukai:"Rukai", Tsou:"Tsou", Saisiyat:"Saisiyat", Yami:"Yami", Seediq:"Seediq", Truku:"Truku", Kavalan:"Kavalan", Sakizaya:"Sakizaya", Thao:"Thao", Kanakanavu:"Kanakanavu", Saaroa:"Saaroa" }
+  },
+  zh: {
+    title: "台灣原住民語 → 韓文轉換器",
+    inputLabel: "原文（羅馬字）",
+    eLabel: "e→ㅓ", eLabel2: "ㅔ",
+    exampleBtn: "例句",
+    caseNote: "大小寫",
+    source: "例句來源：族語E樂園 · 原住民族語言線上辭典",
+    resultLabel: "韓文轉換結果",
+    copy: "複製", clear: "清除", live: "即時運作中",
+    pipeline: "轉換步驟",
+    alpha: "原住民語羅馬字字母表",
+    alphaNote: "· 雙字母：dr, dj, dh, lr, hl, lh, lj, ng, th, tr, tj, sh, oe, ae\n· 特殊：’ / ^（聲門）、ɨ / ʉ\n· 子音群：kl→클, pl→플 · 大小寫 (S≠s, R≠r)",
+    tribesFull: "原住民族名稱（韓·英·中）",
+    footer: "台灣原住民語羅馬字－韓文轉換器",
+    placeholder: "請輸入原住民語羅馬字...",
+    charCount: n => `字數: ${n}`,
+    syllCount: n => `音節: ${n}`,
+    modalE: "關閉（預設）：e → ㅓ\n適用：魯凱、撒奇萊雅、賽夏、達悟、噶瑪蘭、太魯閣、卑南、布農、賽德克\n\n開啟：e → ㅔ\n適用：阿美、鄒、卡那卡那富、泰雅、排灣",
+    modalS: "關閉(=s)：大寫 S 視為 s\n開啟(≠s)：賽夏語大寫 S 為獨立音素（ш）",
+    modalR: "關閉(=r)：大寫 R 視為 r\n開啟(≠r)：噶瑪蘭語大寫 R 為獨立音素",
+    close: "關閉",
+    sOff: "=s", sOn: "≠s", rOff: "=r", rOn: "≠r",
+    tribes: { unified:"統合", Amis:"阿美", Atayal:"泰雅", Paiwan:"排灣", Bunun:"布農", Puyuma:"卑南", Rukai:"魯凱", Tsou:"鄒", Saisiyat:"賽夏", Yami:"達悟", Seediq:"賽德克", Truku:"太魯閣", Kavalan:"噶瑪蘭", Sakizaya:"撒奇萊雅", Thao:"邵", Kanakanavu:"卡那卡那富", Saaroa:"拉阿魯哇" }
+  }
+};
+
+let uiLang = "ko";
+let optEtoE = false;
+let optS = false;
+let optR = false;
+
+const ONSETS = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+const VOWELS = ["ㅏ","ㅐ","ㅑ","ㅒ","ㅓ","ㅔ","ㅕ","ㅖ","ㅗ","ㅘ","ㅙ","ㅚ","ㅛ","ㅜ","ㅝ","ㅞ","ㅟ","ㅠ","ㅡ","ㅢ","ㅣ"];
+const CODAS  = ["","ㄱ","ㄲ","ㄳ","ㄴ","ㄵ","ㄶ","ㄷ","ㄹ","ㄺ","ㄻ","ㄼ","ㄽ","ㄾ","ㄿ","ㅀ","ㅁ","ㅂ","ㅄ","ㅅ","ㅆ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+
+function composeHangul(onset, vowel, coda = "") {
+  let oIdx = ONSETS.indexOf(onset);
+  let vIdx = VOWELS.indexOf(vowel);
+  let cIdx = CODAS.indexOf(coda);
+  if (oIdx === -1) oIdx = 11;
+  if (vIdx === -1) vIdx = 0;
+  if (cIdx === -1) cIdx = 0;
+  return String.fromCharCode(0xAC00 + (oIdx * 21 + vIdx) * 28 + cIdx);
+}
+
+// 이중문자: 해당 언어에서만 한 글자로 결합. 그 외 언어는 두 글자로 처리.
+// unified(통합)에서는 ng만 이중문자로 허용.
+const DIGRAPH_TRIBES = {
+  "ae": ["Saisiyat"],
+  "dh": ["Rukai"],
+  "dj": ["Paiwan"],
+  "dr": ["Rukai", "Paiwan", "Puyuma"],
+  "hl": ["Saaroa"],
+  "lh": ["Thao", "Puyuma"],
+  "lj": ["Paiwan"],
+  "lr": ["Rukai", "Puyuma"],
+  "ng": ["Rukai","Bunun","Thao","Sakizaya","Saisiyat","Seediq","Amis","Yami","Tsou","Kanakanavu","Kavalan","Atayal","Truku","Paiwan","Puyuma","Saaroa"],
+  "oe": ["Saisiyat"],
+  "sh": ["Thao"],
+  "th": ["Rukai", "Thao"],
+  "tj": ["Paiwan"],
+  "tr": ["Rukai", "Puyuma"]
+};
+
+let currentTribe = "unified";
+
+function digraphAllowed(dg) {
+  // 통합: ng만 이중문자로 인정
+  if (currentTribe === "unified") return dg === "ng";
+  const list = DIGRAPH_TRIBES[dg];
+  return list ? list.includes(currentTribe) : false;
+}
+
+function digraphsForTribe(tribe) {
+  if (tribe === "unified") return ["ng"];
+  return Object.keys(DIGRAPH_TRIBES).filter(dg => DIGRAPH_TRIBES[dg].includes(tribe));
+}
+
+function getVarsRules() {
+  // 이중문자 (언어별 허용 시에만 포함) — 긴 것 우선
+  const digraphs = [
+    ["dr","д"],["dj","џ"],["dh","д"],["lr","л"],["hl","л̥"],["lh","л̥"],
+    ["lj","љ"],["ng","ң"],["th","с"],["tr","т"],["tj","ч"],["sh","ш"],
+    ["oe","ө"],["ae","ӕ"]
+  ];
+  const rules = [];
+  for (const [lat, cyr] of digraphs) {
+    if (digraphAllowed(lat)) rules.push([lat, cyr]);
+  }
+  rules.push(
+    ["ṟ","р"],
+    ["b","б"],["v","б"],["g","г"],["d","д"],["j","џ"],
+    ["z","џ"],["y","й"],["k","к"],["q","к"],["l","л"],["m","м"],
+    ["n","н"],["h","һ"],["p","п"],["r","р"],["s","с"],["t","т"],
+    ["w","ў"],["f","п"],["x","һ"],["c","ч"],
+    ["^","ӏ"],["'","ӏ"],["’","ӏ"],["ʼ","ӏ"],["`","ӏ"],["∅","ӏ"],
+    ["a","а"],["é","є"],["ē","э"],["i","и"],["o","о"],["u","у"],
+    ["ɨ","ы"],["ʉ","ы"]
+  );
+  if (optEtoE) rules.push(["e","є"]); else rules.push(["e","э"]);
+  if (optS) rules.unshift(["S","ш"]); else rules.push(["S","с"]);
+  if (optR) rules.unshift(["R","р"]); else rules.push(["R","р"]);
+  return rules;
+}
+
+function applyVars(text) {
+  const VARS_RULES = getVarsRules();
+  let i = 0, len = text.length, result = "";
+  while (i < len) {
+    let matched = false;
+    if (i + 1 < len) {
+      let sub2 = text.substr(i, 2);
+      let sub2Lower = sub2.toLowerCase();
+      for (let [lat, cyr] of VARS_RULES) {
+        if (lat.length === 2 && lat === sub2) { result += cyr; i += 2; matched = true; break; }
+      }
+      if (matched) continue;
+      for (let [lat, cyr] of VARS_RULES) {
+        if (lat.length === 2 && lat === sub2Lower) { result += cyr; i += 2; matched = true; break; }
+      }
+      if (matched) continue;
+    }
+    let ch = text[i], chLower = ch.toLowerCase();
+    for (let [lat, cyr] of VARS_RULES) {
+      if (lat.length === 1 && lat === ch) { result += cyr; i++; matched = true; break; }
+    }
+    if (matched) continue;
+    for (let [lat, cyr] of VARS_RULES) {
+      if (lat.length === 1 && lat === chLower) { result += cyr; i++; matched = true; break; }
+    }
+    if (matched) continue;
+    result += ch;
+    i++;
+  }
+  return result;
+}
+
+function applyRewrite(str) {
+  str = str.replace(/л̥/g, "һл");
+  str = str.replace(/([аӕєэиоуыө])ӏ(?=[^аӕєэиоуыө]|$)/g, "$1");
+  str = str.replace(/ӏ+/g, "ӏ");
+  str = str.replace(/бб/g,"б").replace(/чч/g,"ч").replace(/дд/g,"д")
+           .replace(/џџ/g,"џ").replace(/пп/g,"п").replace(/гг/g,"г")
+           .replace(/һһ/g,"һ").replace(/кк/g,"к").replace(/лл/g,"л")
+           .replace(/љљ/g,"љ").replace(/рр/g,"р").replace(/сс/g,"с")
+           .replace(/шш/g,"ш").replace(/тт/g,"т").replace(/ўў/g,"ў");
+  const V = "[аӕєэиоуыө]";
+  str = str.replace(new RegExp(`(${V})мм(${V})`,"g"),"$1м,м$2").replace(/мм/g,"м")
+           .replace(new RegExp(`(${V})нн(${V})`,"g"),"$1н,н$2").replace(/нн/g,"н")
+           .replace(/ңң/g,"ң");
+  str = str.replace(/ўы/g,"уы").replace(/йы/g,"иы").replace(/ӏӏ/g,"ӏ");
+  str = str.replace(new RegExp(`ш(${V})`,"g"),"сй$1")
+           .replace(/ш(?=\b|\s|$)/g,"си").replace(/ш/g,"сйу");
+  const VL = "[чпл̥ксштх]";
+  str = str.replace(new RegExp(`(${V})к(?=${VL})`,"g"),"$1к,")
+           .replace(new RegExp(`(${V})п(?=${VL})`,"g"),"$1п,");
+  str = str.replace(new RegExp(`љ(${V})`,"g"),"лй$1").replace(/љ/g,"л");
+  str = str.replace(/(^|\s)л/g,"$1л;")
+           .replace(new RegExp(`л(?=${V}|й|м,|н,)`,"g"),"л;")
+           .replace(/(?<=,)л/g,"л;");
+  let resL = "";
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === 'л' && str[i+1] !== ';') resL += "л,";
+    else resL += str[i];
+  }
+  str = resL;
+  str = str.replace(/(^|\s)м/g,"$1м;").replace(/(^|\s)н/g,"$1н;")
+           .replace(new RegExp(`м(?=${V})`,"g"),"м;")
+           .replace(new RegExp(`н(?=${V})`,"g"),"н;");
+  let resMN = "";
+  for (let i = 0; i < str.length; i++) {
+    if ((str[i]==='м'||str[i]==='н') && str[i+1]!==';' && str[i+1]!==',') resMN += str[i]+",";
+    else resMN += str[i];
+  }
+  str = resMN;
+  str = str.replace(/,,/g,",").replace(/,;/g,"").replace(/,л,/g,"л,")
+           .replace(/,ң,/g,"ң,").replace(/,м,/g,"м,").replace(/,н,/g,"н,").replace(/;/g,"");
+  return str;
+}
+
+function convertWordToHangul(word) {
+  if (!word) return "";
+  let i = 0, len = word.length, result = "";
+  let pendingOnset = null, pendingVowel = null, pendingCoda = "";
+
+  function flush() {
+    if (pendingOnset !== null || pendingVowel !== null) {
+      result += composeHangul(pendingOnset ?? "ㅇ", pendingVowel ?? "ㅡ", pendingCoda);
+      pendingOnset = null; pendingVowel = null; pendingCoda = "";
+    }
+  }
+
+  // include џ љ ң һ etc. outside basic а-я
+  const CYR = /[а-яА-Яөєӕўңһл̥ӏ;,џљ]/;
+
+  while (i < len) {
+    let ch = word[i];
+    let isStart = (i === 0);
+
+    if (!CYR.test(ch)) {
+      flush(); result += ch; i++; continue;
+    }
+
+    let sub2 = word.substr(i, 2);
+    let glideMap = {
+      "ўа":"ㅘ","ўє":"ㅞ","ўэ":"ㅝ","ўо":"ㅝ","ўи":"ㅟ","ўу":"ㅜ","ўы":"ㅡ",
+      "йа":"ㅑ","йє":"ㅖ","йэ":"ㅕ","йо":"ㅛ","йу":"ㅠ","йи":"ㅣ","йы":"ㅢ"
+    };
+    if (glideMap[sub2]) {
+      if (pendingVowel) flush();
+      pendingVowel = glideMap[sub2];
+      if (pendingOnset === null) pendingOnset = "ㅇ";
+      i += 2; continue;
+    }
+
+    let vowelMap = {"а":"ㅏ","ӕ":"ㅐ","э":"ㅓ","є":"ㅔ","о":"ㅗ","ө":"ㅚ","и":"ㅣ","ы":"ㅡ","у":"ㅜ"};
+    if (vowelMap[ch]) {
+      if (pendingVowel) flush();
+      pendingVowel = vowelMap[ch];
+      if (pendingOnset === null) pendingOnset = "ㅇ";
+      i++; continue;
+    }
+
+    if (ch === 'й') {
+      if (pendingVowel !== null) { flush(); pendingOnset = "ㅇ"; pendingVowel = "ㅣ"; }
+      else if (pendingOnset !== null) pendingVowel = "ㅣ";
+      else { pendingOnset = "ㅇ"; pendingVowel = "ㅣ"; }
+      i++; continue;
+    }
+    if (ch === 'ў') {
+      if (pendingVowel !== null) { flush(); pendingOnset = "ㅇ"; pendingVowel = "ㅜ"; }
+      else if (pendingOnset !== null) pendingVowel = "ㅜ";
+      else { pendingOnset = "ㅇ"; pendingVowel = "ㅜ"; }
+      i++; continue;
+    }
+    if (ch === 'ӏ') { i++; continue; }
+
+    if (word.substr(i,2) === "к,") {
+      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㄱ"; flush(); }
+      else result += "크";
+      i += 2; continue;
+    }
+    if (word.substr(i,2) === "п,") {
+      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㅂ"; flush(); }
+      else result += "프";
+      i += 2; continue;
+    }
+    if (word.substr(i,2) === "л,") {
+      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㄹ"; flush(); }
+      else result += "르";
+      i += 2; continue;
+    }
+    if (word.substr(i,2) === "м,") {
+      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㅁ"; flush(); }
+      else result += "므";
+      i += 2; continue;
+    }
+    if (word.substr(i,2) === "н,") {
+      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㄴ"; flush(); }
+      else result += "느";
+      i += 2; continue;
+    }
+    if (ch === 'ң') {
+      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㅇ"; flush(); }
+      else result += "응";
+      i++; continue;
+    }
+
+    if (ch === 'л') {
+      if (isStart) {
+        if (pendingOnset !== null || pendingVowel !== null) flush();
+        pendingOnset = "ㄹ";
+      } else {
+        if (pendingOnset !== null) {
+          if (!pendingVowel) pendingVowel = "ㅡ";
+          pendingCoda = "ㄹ"; flush();
+        } else if (pendingVowel !== null) {
+          pendingCoda = "ㄹ"; flush();
+        }
+        pendingOnset = "ㄹ";
+      }
+      i++; continue;
+    }
+
+    let onsetMap = {"б":"ㅂ","г":"ㄱ","д":"ㄷ","к":"ㅋ","м":"ㅁ","н":"ㄴ","һ":"ㅎ","п":"ㅍ","р":"ㄹ","с":"ㅅ","т":"ㅌ","ч":"ㅊ","џ":"ㅈ"};
+    if (onsetMap[ch] !== undefined) {
+      if (pendingOnset !== null && pendingVowel !== null) flush();
+      else if (pendingOnset !== null && pendingVowel === null) flush();
+      pendingOnset = onsetMap[ch];
+      i++; continue;
+    }
+
+    flush(); result += ch; i++;
+  }
+  flush();
+  return result;
+}
+
+function convertFormosanToHangul(inputText) {
+  if (!inputText || !inputText.trim()) return { step1:"", step2:"", output:"" };
+  let step1 = applyVars(inputText);
+  let step2 = applyRewrite(step1);
+  let words = step2.split(/(\s+)/);
+  let converted = words.map(w => convertWordToHangul(w));
+  return { step1, step2, output: converted.join("") };
+}
+
+const EXAMPLES = [
+  { tribe: "Amis", text: "Pinaay ko Yincomin finacadan i hatini?" },
+  { tribe: "Amis", text: "O ’Amis, Tayan, Paywan, Ponong, Lokay, Piwma, Tao, Saysiyak, Taroko, Co, Kafalan, Sakilaya, Secik ato Saw." },
+  { tribe: "Amis", text: "O ilisin aca ko lisin no ’Amis han?" },
+  { tribe: "Amis", text: "Nga’ay ho! Naniyaro’ kaku." },
+  { tribe: "Atayal", text: "Lokah su’ ga? Atayal kaku." },
+  { tribe: "Atayal", text: "Itiya ho, ira ko cecay lipahak to romi’ami’ad a lotong." },
+  { tribe: "Paiwan", text: "Masalu tua sun. Tiaivang aken." },
+  { tribe: "Bunun", text: "Uninang! Tastulumah katangusa." },
+  { tribe: "Puyuma", text: "Nawaun! Ina kaku dra Pinuyumayan." },
+  { tribe: "Rukai", text: "Sabau! Rukai ku ngadan." },
+  { tribe: "Tsou", text: "Aveoveoyu! Tsou a’o." },
+  { tribe: "Saisiyat", text: "Ma’an ray ’aehae’." },
+  { tribe: "Yami", text: "Ako so ya namo." },
+  { tribe: "Seediq", text: "Empiyu su? Seediq ka yaku." },
+  { tribe: "Truku", text: "Empiyu su? Truku ka yaku." },
+  { tribe: "Kavalan", text: "Nayay su! Kavalan aiku." },
+  { tribe: "Sakizaya", text: "Nga’ay ho sakizaya." },
+  { tribe: "Thao", text: "Uninang thao." },
+  { tribe: "Kanakanavu", text: "Aveoveoyu kanakanavu." },
+  { tribe: "Saaroa", text: "Aveoveoyu saaroa." }
+];
+
+const ALPHABET = [
+  ["a","ㅏ"],["ae","ㅐ"],["e","ㅓ/ㅔ"],["é","ㅔ"],["i","ㅣ"],["o","ㅗ"],["oe","ㅚ"],["u","ㅜ"],["ɨ/ʉ","ㅡ"],
+  ["b","ㅂ"],["c","ㅊ"],["d","ㄷ"],["dr","ㄷ"],["dj","ㅈ"],["f","ㅍ"],["g","ㄱ"],
+  ["h","ㅎ"],["hl/lh","ㅎㄹ"],["j","ㅈ"],["k","ㅋ"],["l","ㄹ"],["lj","ㄹ"],["m","ㅁ"],
+  ["n","ㄴ"],["ng","ㅇ"],["p","ㅍ"],["q","ㅋ"],["r","ㄹ"],["s","ㅅ"],["sh","ㅅ"],["S","ㅅ/ш"],
+  ["t","ㅌ"],["th","ㅅ"],["tr","ㅌ"],["tj","ㅊ"],["v","ㅂ"],["w","ㅜ"],["x","ㅎ"],["y","ㅣ"],["z","ㅈ"],
+  ["' / ^","(성문)"]
+];
+
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("inputText");
+  const output = document.getElementById("outputText");
+  const charCount = document.getElementById("charCount");
+  const syllCount = document.getElementById("syllCount");
+  const step1 = document.getElementById("step1");
+  const step2 = document.getElementById("step2");
+  const step3 = document.getElementById("step3");
+  const btnCopy = document.getElementById("btnCopy");
+  const btnClear = document.getElementById("btnClear");
+  const btnNewExample = document.getElementById("btnNewExample");
+  const exampleText = document.getElementById("exampleText");
+  const exampleLang = document.getElementById("exampleLang");
+  const alphaGrid = document.getElementById("alphaGrid");
+  const uiLangSel = document.getElementById("uiLang");
+  const swE = document.getElementById("swE");
+  const swS = document.getElementById("swS");
+  const swR = document.getElementById("swR");
+  const sState = document.getElementById("t-sState");
+  const rState = document.getElementById("t-rState");
+  const pipelineToggle = document.getElementById("pipelineToggle");
+  const pipelineBody = document.getElementById("pipelineBody");
+  const pipeIcon = document.getElementById("pipeIcon");
+
+  ALPHABET.forEach(([lat, hang]) => {
+    const div = document.createElement("div");
+    div.className = "alpha-item";
+    div.innerHTML = `<span class="lat">${lat}</span><span class="hang">${hang}</span>`;
+    alphaGrid.appendChild(div);
+  });
+
+  // special char keyboard
+  function insertAtCursor(ch) {
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const val = input.value;
+    input.value = val.slice(0, start) + ch + val.slice(end);
+    input.selectionStart = input.selectionEnd = start + ch.length;
+    input.focus();
+    fromExample = false;
+    update();
+  }
+  document.querySelectorAll("#charKb button").forEach(btn => {
+    btn.addEventListener("click", () => insertAtCursor(btn.dataset.ch));
+  });
+
+  const digraphKb = document.getElementById("digraphKb");
+  function updateDigraphKeyboard(tribe) {
+    const dgs = digraphsForTribe(tribe || currentTribe);
+    digraphKb.innerHTML = "";
+    if (!dgs.length) {
+      digraphKb.style.display = "none";
+      return;
+    }
+    digraphKb.style.display = "flex";
+    dgs.forEach(dg => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.dataset.ch = dg;
+      btn.textContent = dg;
+      btn.title = "이중문자: " + dg;
+      btn.addEventListener("click", () => insertAtCursor(dg));
+      digraphKb.appendChild(btn);
+    });
+  }
+  updateDigraphKeyboard("unified");
+
+  function applyI18n() {
+    const t = I18N[uiLang];
+    document.getElementById("t-title").textContent = t.title;
+    document.getElementById("t-inputLabel").textContent = t.inputLabel;
+    document.getElementById("t-eLabel").textContent = t.eLabel;
+    document.getElementById("t-eLabel2").textContent = t.eLabel2;
+    document.getElementById("t-exampleBtn").textContent = t.exampleBtn;
+    document.getElementById("t-caseNote").textContent = t.caseNote;
+    document.getElementById("t-source").textContent = t.source;
+    document.getElementById("t-resultLabel").textContent = t.resultLabel;
+    document.getElementById("t-copy").textContent = t.copy;
+    document.getElementById("t-clear").textContent = t.clear;
+    document.getElementById("t-live").textContent = t.live;
+    document.getElementById("t-pipeline").textContent = t.pipeline;
+    document.getElementById("t-alpha").textContent = t.alpha;
+    document.getElementById("t-alphaNote").textContent = t.alphaNote;
+    document.getElementById("t-tribesFull").textContent = t.tribesFull;
+    document.getElementById("t-footer").textContent = t.footer;
+    input.placeholder = t.placeholder;
+    document.getElementById("modalE-title").textContent = uiLang === "ko" ? "e 변환 안내" : uiLang === "en" ? "e mapping" : "e 轉換說明";
+    document.getElementById("modalE-body").textContent = t.modalE;
+    document.getElementById("modalS-title").textContent = uiLang === "ko" ? "S 대소문자" : uiLang === "en" ? "S case" : "S 大小寫";
+    document.getElementById("modalS-body").textContent = t.modalS;
+    document.getElementById("modalR-title").textContent = uiLang === "ko" ? "R 대소문자" : uiLang === "en" ? "R case" : "R 大小寫";
+    document.getElementById("modalR-body").textContent = t.modalR;
+    document.getElementById("modalE-close").textContent = t.close;
+    document.getElementById("modalS-close").textContent = t.close;
+    document.getElementById("modalR-close").textContent = t.close;
+    sState.textContent = optS ? t.sOn : t.sOff;
+    rState.textContent = optR ? t.rOn : t.rOff;
+    document.querySelectorAll("#tribesList span").forEach(sp => {
+      const key = sp.dataset.tribe;
+      if (t.tribes[key]) sp.textContent = t.tribes[key];
+    });
+    update();
+  }
+
+  uiLangSel.addEventListener("change", () => {
+    uiLang = uiLangSel.value;
+    applyI18n();
+  });
+
+  swE.addEventListener("click", () => {
+    optEtoE = !optEtoE;
+    swE.classList.toggle("on", optEtoE);
+    update();
+  });
+  swS.addEventListener("click", () => {
+    optS = !optS;
+    swS.classList.toggle("on", optS);
+    sState.textContent = optS ? I18N[uiLang].sOn : I18N[uiLang].sOff;
+    update();
+  });
+  swR.addEventListener("click", () => {
+    optR = !optR;
+    swR.classList.toggle("on", optR);
+    rState.textContent = optR ? I18N[uiLang].rOn : I18N[uiLang].rOff;
+    update();
+  });
+
+  document.getElementById("infoE").addEventListener("click", () => document.getElementById("modalE").classList.add("show"));
+  document.getElementById("infoS").addEventListener("click", () => document.getElementById("modalS").classList.add("show"));
+  document.getElementById("infoR").addEventListener("click", () => document.getElementById("modalR").classList.add("show"));
+  document.getElementById("modalE-close").addEventListener("click", () => document.getElementById("modalE").classList.remove("show"));
+  document.getElementById("modalS-close").addEventListener("click", () => document.getElementById("modalS").classList.remove("show"));
+  document.getElementById("modalR-close").addEventListener("click", () => document.getElementById("modalR").classList.remove("show"));
+  document.querySelectorAll(".modal-overlay").forEach(m => m.addEventListener("click", e => { if (e.target === m) m.classList.remove("show"); }));
+
+  pipelineToggle.addEventListener("click", () => {
+    const open = pipelineBody.classList.toggle("open");
+    pipeIcon.textContent = open ? "▼" : "▶";
+  });
+
+  document.querySelectorAll("#tribesList span").forEach(sp => {
+    sp.addEventListener("click", () => {
+      document.querySelectorAll("#tribesList span").forEach(s => s.classList.remove("active"));
+      sp.classList.add("active");
+      const tribe = sp.dataset.tribe;
+      applyTribeOptions(tribe);
+      // 사용자가 직접 입력한 내용이 있으면 예문을 덮어쓰지 않음 (예문 상태면 교체 허용)
+      if (input.value.trim() && !fromExample) {
+        update();
+        return;
+      }
+      if (tribe === "unified") {
+        showRandomExample();
+        return;
+      }
+      const list = EXAMPLES.filter(e => e.tribe === tribe);
+      if (list.length) {
+        const ex = list[Math.floor(Math.random() * list.length)];
+        showExample(ex);
+      } else {
+        update();
+      }
+    });
+  });
+
+  // 언어별 옵션 기본값
+  const TRIBE_OPTS = {
+    unified:     { e: false, s: false, r: false },
+    Amis:        { e: true,  s: false, r: false },
+    Atayal:      { e: true,  s: false, r: false },
+    Paiwan:      { e: true,  s: false, r: false },
+    Tsou:        { e: true,  s: false, r: false },
+    Kanakanavu:  { e: true,  s: false, r: false },
+    Saisiyat:    { e: false, s: true,  r: false },
+    Kavalan:     { e: false, s: false, r: true  },
+    // 나머지: 통합과 동일
+    Bunun:       { e: false, s: false, r: false },
+    Puyuma:      { e: false, s: false, r: false },
+    Rukai:       { e: false, s: false, r: false },
+    Yami:        { e: false, s: false, r: false },
+    Seediq:      { e: false, s: false, r: false },
+    Truku:       { e: false, s: false, r: false },
+    Sakizaya:    { e: false, s: false, r: false },
+    Thao:        { e: false, s: false, r: false },
+    Saaroa:      { e: false, s: false, r: false }
+  };
+
+  function applyTribeOptions(tribe) {
+    currentTribe = tribe || "unified";
+    const o = TRIBE_OPTS[tribe] || TRIBE_OPTS.unified;
+    optEtoE = o.e;
+    optS = o.s;
+    optR = o.r;
+    swE.classList.toggle("on", optEtoE);
+    swS.classList.toggle("on", optS);
+    swR.classList.toggle("on", optR);
+    const t = I18N[uiLang];
+    sState.textContent = optS ? t.sOn : t.sOff;
+    rState.textContent = optR ? t.rOn : t.rOff;
+    if (typeof updateDigraphKeyboard === "function") updateDigraphKeyboard(currentTribe);
+  }
+
+  let lastIdx = -1;
+  let fromExample = true; // 현재 입력이 예문에서 왔는지
+
+  function showExample(ex) {
+    fromExample = true;
+    const t = I18N[uiLang];
+    exampleText.textContent = ex.text;
+    exampleLang.textContent = t.tribes[ex.tribe] || ex.tribe;
+    input.value = ex.text;
+    // 로고 아래 선택 언어 동기화 + 옵션 스위치 적용
+    document.querySelectorAll("#tribesList span").forEach(s => {
+      s.classList.toggle("active", s.dataset.tribe === ex.tribe);
+    });
+    applyTribeOptions(ex.tribe);
+    update();
+  }
+  function showRandomExample() {
+    const active = document.querySelector("#tribesList span.active");
+    const currentTribe = active ? active.dataset.tribe : "unified";
+    let pool = EXAMPLES;
+    if (currentTribe && currentTribe !== "unified") {
+      const filtered = EXAMPLES.filter(e => e.tribe === currentTribe);
+      if (filtered.length) pool = filtered;
+    }
+    let idx;
+    do { idx = Math.floor(Math.random() * pool.length); } while (idx === lastIdx && pool.length > 1);
+    lastIdx = idx;
+    const ex = pool[idx];
+    if (currentTribe === "unified") {
+      // 통합 모드: 예문만 바꾸고 선택/옵션은 통합 유지
+      const t = I18N[uiLang];
+      exampleText.textContent = ex.text;
+      exampleLang.textContent = t.tribes[ex.tribe] || ex.tribe;
+      input.value = ex.text;
+      applyTribeOptions("unified");
+      update();
+    } else {
+      showExample(ex);
+    }
+  }
+
+  btnNewExample.addEventListener("click", showRandomExample);
+
+  function update() {
+    const text = input.value;
+    const t = I18N[uiLang];
+    charCount.textContent = t.charCount(text.length);
+    if (!text.trim()) {
+      output.textContent = "";
+      syllCount.textContent = t.syllCount(0);
+      step1.textContent = step2.textContent = step3.textContent = "-";
+      return;
+    }
+    const r = convertFormosanToHangul(text);
+    output.textContent = r.output;
+    const cnt = (r.output.match(/[\uAC00-\uD7A3]/g) || []).length;
+    syllCount.textContent = t.syllCount(cnt);
+    step1.textContent = r.step1 || "-";
+    step2.textContent = r.step2 || "-";
+    step3.textContent = r.output || "-";
+  }
+
+  input.addEventListener("input", () => {
+    fromExample = false;
+    update();
+  });
+
+  btnClear.addEventListener("click", () => {
+    input.value = "";
+    input.focus();
+    update();
+  });
+
+  btnCopy.addEventListener("click", () => {
+    const txt = output.textContent.trim();
+    if (!txt) return;
+    navigator.clipboard.writeText(txt).then(() => {
+      const t = I18N[uiLang];
+      btnCopy.querySelector("span").textContent = uiLang === "ko" ? "복사됨" : uiLang === "en" ? "Copied" : "已複製";
+      btnCopy.classList.add("copied");
+      setTimeout(() => {
+        btnCopy.querySelector("span").textContent = t.copy;
+        btnCopy.classList.remove("copied");
+      }, 1500);
+    }).catch(() => {});
+  });
+
+  applyI18n();
+  showRandomExample();
+});
+</script>
+</body>
+</html>
