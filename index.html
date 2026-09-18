@@ -3,6 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Unicase:wght@300;400;500;600;700&family=Gowun+Batang:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        earth: {50:'#FBF9F5',100:'#F5EFEB',200:'#E9DDD0',300:'#D8C3B0',400:'#C4A48A',500:'#A67C5B',600:'#8C5F40',700:'#6E452B',800:'#52311C',900:'#361E10'},
+        terracotta: {DEFAULT:'#B84A39', dark:'#933526', light:'#D96855'},
+        tribal: {green:'#2A5235', gold:'#C8933E', black:'#231F20', cream:'#F7F3E9'}
+      },
+      fontFamily: {
+        serif: ['"Noto Serif KR"', '"Gowun Batang"', 'serif'],
+        sans: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
 <title>대만원주민어 → 한글 변환기</title>
 <style>
   :root {
@@ -18,13 +40,72 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    font-family: Inter, "Noto Sans KR", sans-serif;
+    background-color: #F7F3E9;
+    background-image: radial-gradient(#D8C3B0 0.75px, transparent 0.75px), radial-gradient(#D8C3B0 0.75px, #F7F3E9 0.75px);
+    background-size: 30px 30px;
+    background-position: 0 0, 15px 15px;
+    color: #231F20;
     line-height: 1.5;
     min-height: 100vh;
-    padding: 1.5rem 1rem 3rem;
+    padding: 0 1rem 3rem;
   }
+  .tribal-border-top {
+    background: repeating-linear-gradient(45deg, #B84A39, #B84A39 12px, #C8933E 12px, #C8933E 24px, #2A5235 24px, #2A5235 36px, #231F20 36px, #231F20 48px);
+    height: 6px;
+    margin: 0 -1rem 0;
+  }
+  .card {
+    background: #fff;
+    border: 2px solid #D8C3B0;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 14px rgba(83,49,28,0.06);
+  }
+  header h1 {
+    font-family: "Noto Serif KR", serif;
+    color: #fff;
+  }
+  .site-header {
+    background: #141110 !important;
+    color: #F5EFEB;
+    margin: 0 -1rem 1.25rem;
+    padding: 1.75rem 1.25rem 1.5rem;
+    border-bottom: none;
+    position: relative;
+  }
+  .btn-copy { background: #B84A39 !important; }
+  .btn-copy:hover { background: #933526 !important; }
+  .btn-copy.copied { background: #2A5235 !important; }
+  .result {
+    background: #FAF6EE !important;
+    border-color: #D8C3B0 !important;
+    color: #231F20 !important;
+    font-family: "Noto Serif KR", serif;
+  }
+  .preset.active, .tribes-short span.active {
+    background: #B84A39 !important;
+    color: #fff !important;
+  }
+  .tribes-short span:hover {
+    background: #E9DDD0 !important;
+    color: #6E452B !important;
+  }
+  .btn-shuffle {
+    background: #C8933E !important;
+    color: #fff !important;
+    border-color: #C8933E !important;
+  }
+  .btn-shuffle:hover { background: #b07e2e !important; }
+  .digraph-kb button {
+    background: #ecfdf5 !important;
+    border-color: #99f6e4 !important;
+    color: #2A5235 !important;
+  }
+  .accent-gold { color: #C8933E; }
+  .accent-terra { color: #B84A39; }
+
   .wrap { max-width: 720px; margin: 0 auto; position: relative; }
   .lang-select {
     position: absolute;
@@ -343,19 +424,273 @@
     color: white;
     padding: 0.5rem;
   }
+
+  .site-header, .site-header h1, header h1, .site-header .sub, .card label,
+  .result, #outputText, .tribes-full, .alpha-section h2 {
+    font-family: "Gowun Batang", "Noto Serif KR", serif !important;
+  }
+  .site-header {
+    background: #141110 !important;
+    color: #F5EFEB;
+    margin: 0 -1rem 1.25rem;
+    padding: 1.75rem 1.25rem 1.5rem;
+    border-bottom: none;
+    position: relative;
+  }
+  .site-header::after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 4px;
+    background: #B84A39;
+  }
+  .site-header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .site-header .sub, .site-header p {
+    font-family: "Gowun Batang", serif !important;
+    color: #C8933E !important;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+  .site-footer {
+    background: #141110;
+    color: #D8C3B0;
+    margin: 2rem -1rem -3rem;
+    padding: 1.25rem 1rem;
+    border-top: 4px solid #B84A39;
+    text-align: center;
+    font-family: "Cormorant Unicase", "Cormorant", "Gowun Batang", serif !important;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+  }
+  .site-footer .en {
+    color: #C8933E;
+    font-family: "Cormorant Unicase", "Cormorant", "Gowun Batang", serif !important;
+  }
+  .result, #outputText {
+    font-family: "Gowun Batang", "Noto Serif KR", serif !important;
+    font-size: 1.4rem !important;
+    font-weight: 700;
+    line-height: 1.7;
+    color: #231F20 !important;
+  }
+  .btn-copy {
+    background: linear-gradient(135deg, #B84A39, #933526) !important;
+    color: white !important;
+    border-radius: 10px !important;
+    padding: 0.55rem 1.15rem !important;
+    font-family: "Gowun Batang", serif !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(184,74,57,0.35);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-copy:hover {
+    background: linear-gradient(135deg, #D96855, #B84A39) !important;
+    transform: translateY(-1px);
+  }
+  .btn-copy.copied {
+    background: linear-gradient(135deg, #2A5235, #1e3d28) !important;
+  }
+  label, .card > label {
+    font-family: "Gowun Batang", serif !important;
+    font-weight: 700;
+    color: #52311C !important;
+  }
+
+
+  .site-header { background: #141110 !important; }
+  .tribal-border-top { margin: 0 -1rem; }
+  body { padding-bottom: 0 !important; }
+
+  .site-header {
+    background: #1a1514 !important;
+    color: #F5EFEB;
+    margin: 0 -1rem 1.25rem;
+    padding: 1.75rem 1.25rem 1.5rem;
+    border-bottom: none;
+    position: relative;
+  }
+  .site-header::after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 4px;
+    background: #B84A39;
+  }
+  .site-header h1,
+  .site-header .sub,
+  header h1 {
+    font-family: "Gowun Batang", "Noto Serif KR", serif !important;
+    letter-spacing: -0.02em;
+  }
+  .site-header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #fff !important;
+  }
+  .site-header .sub,
+  .site-header .en-tag {
+    font-family: "Cormorant Unicase", "Gowun Batang", serif;
+    color: #C8933E;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .site-footer-bar {
+    background: #1a1514;
+    color: #C8A882;
+    margin: 2rem -1rem 0;
+    padding: 1.25rem 1rem;
+    border-top: 4px solid #B84A39;
+    text-align: center;
+    font-family: "Cormorant Unicase", "Cormorant", "Gowun Batang", "Noto Serif KR", serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+  }
+  .site-footer-bar .dot { color: #C8933E; margin: 0 0.4rem; }
+  .site-footer-bar .en { color: #C8933E; }
+  label, .card > label, .step-title, .alpha-section h2 {
+    font-family: "Gowun Batang", "Noto Serif KR", serif !important;
+  }
+  .result {
+    font-family: "Gowun Batang", "Noto Serif KR", serif !important;
+    font-size: 1.35rem !important;
+    font-weight: 700;
+    line-height: 1.7;
+    background: #FAF6EE !important;
+    border: 2px solid #D8C3B0 !important;
+    color: #231F20 !important;
+    border-radius: 12px;
+  }
+  .btn-copy {
+    background: linear-gradient(135deg, #B84A39, #933526) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.55rem 1.15rem !important;
+    font-family: "Gowun Batang", serif !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    box-shadow: 0 2px 8px rgba(184,74,57,0.35);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-copy:hover {
+    background: linear-gradient(135deg, #D96855, #B84A39) !important;
+    transform: translateY(-1px);
+  }
+  .btn-copy.copied {
+    background: linear-gradient(135deg, #2A5235, #1e3d28) !important;
+    box-shadow: 0 2px 8px rgba(42,82,53,0.35);
+  }
+  .btn-clear {
+    font-family: "Gowun Batang", serif !important;
+    border-radius: 10px !important;
+  }
+
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+  }
+  .card-head label {
+    margin-bottom: 0 !important;
+    font-family: "Gowun Batang", "Noto Serif KR", serif !important;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #52311C;
+  }
+  .card-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+  .card-head-actions .btn-shuffle,
+  .card-head-actions .btn-clear,
+  .card-head-actions .btn-copy {
+    font-size: 0.78rem !important;
+    padding: 0.4rem 0.75rem !important;
+  }
+  .switches-row {
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+  }
+  #outputText, .result {
+    min-height: 140px !important;
+    max-height: 140px !important;
+    height: 140px !important;
+    overflow-y: auto !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    line-height: 1.65 !important;
+  }
+  .site-header {
+    background: #141110 !important;
+    color: #fff !important;
+  }
+  .site-header h1, .site-header #t-title {
+    color: #ffffff !important;
+  }
+  .site-header .en-tag {
+      color: #C8933E !important;
+      font-family: "Cormorant Unicase", "Gowun Batang", "Noto Serif KR", serif !important;
+  }
+
+  .tribal-border-top { margin: 0 !important; width: 100%; }
+  .site-header {
+    margin: 0 !important;
+    width: 100%;
+    padding: 1.5rem 1.25rem 1.35rem !important;
+    background: #141110 !important;
+  }
+  .header-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .site-header h1, .site-header #t-title {
+    color: #fff !important;
+    font-size: 1.5rem !important;
+  }
+  .lang-select {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
 </style>
 </head>
 <body>
+<div class="tribal-border-top"></div>
+<div class="site-header">
+  <div class="header-inner">
+    <select id="uiLang" class="lang-select" title="Language">
+      <option value="ko">한국어</option>
+      <option value="en">English</option>
+      <option value="zh">中文</option>
+    </select>
+    <header>
+      <div class="en-tag">Конвертер языков коренных народов Тайваня<br>в хангыль в реальном времени</div>
+      <h1 id="t-title">대만 원주민어 <span style="color:#D96855">→</span> 한글 변환기</h1>
+    </header>
+  </div>
+</div>
 <div class="wrap">
-  <select id="uiLang" class="lang-select" title="Language">
-    <option value="ko">한국어</option>
-    <option value="en">English</option>
-    <option value="zh">中文</option>
-  </select>
-
-  <header>
-    <h1 id="t-title">대만 원주민어 → 한글 변환기</h1>
-  </header>
 
   <p class="tribes-short" id="tribesList">
     <span data-tribe="unified" class="active">통합</span> ·
@@ -378,25 +713,36 @@
   </p>
 
   <div class="card">
-    <div class="label-row">
+    <div class="card-head">
       <label for="inputText" id="t-inputLabel">원문 (로마자)</label>
-      <!-- e switch -->
+      <div class="card-head-actions">
+        <button class="btn-shuffle" id="btnNewExample" type="button" title="예문 바꾸기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+            <polyline points="16 3 21 3 21 8"></polyline>
+            <line x1="4" y1="20" x2="21" y2="3"></line>
+            <polyline points="21 16 21 21 16 21"></polyline>
+            <line x1="15" y1="15" x2="21" y2="21"></line>
+            <line x1="4" y1="4" x2="9" y2="9"></line>
+          </svg>
+          <span id="t-exampleBtn">예시</span>
+        </button>
+        <button class="btn-clear" id="btnClear" type="button"><span id="t-clear">지우기</span></button>
+      </div>
+    </div>
+    <div class="label-row switches-row">
       <div class="switch-group">
         <span id="t-eLabel">e→ㅓ</span>
         <div class="switch" id="swE" title="e → ㅔ"></div>
         <span id="t-eLabel2">ㅔ</span>
         <button class="info-btn" id="infoE" type="button">ⓘ</button>
       </div>
-      <!-- case note left of S/R -->
       <span class="case-note" id="t-caseNote">대소문자 구분</span>
-      <!-- S -->
       <div class="switch-group">
         <span>S→</span>
         <div class="switch" id="swS" title="Saisiyat S"></div>
         <span id="t-sState">=s</span>
         <button class="info-btn" id="infoS" type="button">ⓘ</button>
       </div>
-      <!-- R -->
       <div class="switch-group">
         <span>R→</span>
         <div class="switch" id="swR" title="Kavalan R"></div>
@@ -406,36 +752,13 @@
     </div>
     <textarea id="inputText" spellcheck="false" placeholder=""></textarea>
 
-    <!-- special character keyboard -->
-    <div class="char-kb" id="charKb">
-      <button type="button" data-ch="ʼ">ʼ</button>
-      <button type="button" data-ch="^">^</button>
-      <button type="button" data-ch=":">:</button>
-      <button type="button" data-ch="ṟ">ṟ</button>
-      <button type="button" data-ch="_">_</button>
-      <button type="button" data-ch="ē">ē</button>
-      <button type="button" data-ch="é">é</button>
-      <button type="button" data-ch="ɨ">ɨ</button>
-      <button type="button" data-ch="ʉ">ʉ</button>
-      <button type="button" data-ch=".">.</button>
-      <button type="button" data-ch="-">-</button>
-    </div>
+    <div class="char-kb" id="charKb"></div>
     <div class="char-kb digraph-kb" id="digraphKb" style="display:none"></div>
 
     <div class="example-row">
-      <button class="btn-shuffle" id="btnNewExample" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 3 21 3 21 8"></polyline>
-          <line x1="4" y1="20" x2="21" y2="3"></line>
-          <polyline points="21 16 21 21 16 21"></polyline>
-          <line x1="15" y1="15" x2="21" y2="21"></line>
-          <line x1="4" y1="4" x2="9" y2="9"></line>
-        </svg>
-        <span id="t-exampleBtn">예시</span>
-      </button>
       <span class="example-chip"><span class="lang" id="exampleLang"></span><span id="exampleText"></span></span>
     </div>
-    <p class="source-note" id="t-source">예문 출처: 族語E樂園 (web.klokah.tw) · 原住民族語言線上辭典</p>
+    <p class="source-note" id="t-source">예문 출처: 원주민 언어 E-배움터 · 원주민 언어 온라인 사전</p>
     <div class="meta">
       <span id="charCount">글자 수: 0</span>
       <span>Script: Latn</span>
@@ -443,12 +766,13 @@
   </div>
 
   <div class="card">
-    <label id="t-resultLabel">한글 변환 결과</label>
-    <div class="result" id="outputText"></div>
-    <div class="actions">
-      <button class="btn-copy" id="btnCopy" type="button"><span id="t-copy">복사</span></button>
-      <button class="btn-clear" id="btnClear" type="button"><span id="t-clear">지우기</span></button>
+    <div class="card-head">
+      <label id="t-resultLabel">한글 변환 결과</label>
+      <div class="card-head-actions">
+        <button class="btn-copy" id="btnCopy" type="button"><i class="fa-regular fa-copy" id="copyIcon"></i> <span id="t-copy">한글 복사</span></button>
+      </div>
     </div>
+    <div class="result" id="outputText"></div>
     <div class="meta">
       <span id="syllCount">변환 음절: 0</span>
       <span style="color:var(--green)" id="t-live">실시간 작동 중</span>
@@ -493,7 +817,10 @@
     루카이 (Rukai, 魯凱) · 부눈 (Bunun, 布農) · 사오 (Thao, 邵) · 사키자야 (Sakizaya, 撒奇萊雅) · 샤이시야트 (Saisiyat, 賽夏) · 서디크 (Seediq, 賽德克) · 아미스 (Amis, 阿美) · 야미 (Yami, 達悟) · 초우 (Tsou, 鄒) · 카나카나부 (Kanakanavu, 卡那卡那富) · 커발란 (Kavalan, 噶瑪蘭) · 타얄 (Atayal, 泰雅) · 트루쿠 (Truku, 太魯閣) · 파이완 (Paiwan, 排灣) · 피누유마얀 (Puyuma, 卑南) · 흘라알루아 (Saaroa, 拉阿魯哇)
   </div>
 
-  <footer id="t-footer">대만 원주민어 로마자-한글 변환기</footer>
+  <div class="site-footer">
+  대만 원주민어 실시간 한글 변환기</span><br>
+  <span class="en">Конвертер языков коренных народов Тайваня в хангыль в реальном времени</span>
+</div>
 </div>
 
 <div class="modal-overlay" id="modalE">
@@ -526,9 +853,9 @@ const I18N = {
     eLabel: "e→ㅓ", eLabel2: "ㅔ",
     exampleBtn: "예시",
     caseNote: "대소문자 구분",
-    source: "예문 출처: 族語E樂園 (web.klokah.tw) · 原住民族語言線上辭典",
+    source: "예문 출처: 원주민 언어 E-배움터 · 원주민 언어 온라인 사전",
     resultLabel: "한글 변환 결과",
-    copy: "복사", clear: "지우기", live: "실시간 작동 중",
+    copy: "한글 복사", clear: "지우기", live: "실시간 작동 중",
     pipeline: "단계별 파이프라인",
     alpha: "원주민어 로마자 알파벳 일람",
     alphaNote: "· 이중자음/모음: dr, dj, dh, lr, hl, lh, lj, ng, th, tr, tj, sh, oe, ae\n· 특수: ’ / ^ (성문 파열음), ɨ / ʉ (중설 모음)\n· 자음군 예: kl→클, pl→플 · 대소문자 구분 (S≠s, R≠r)",
@@ -552,7 +879,7 @@ const I18N = {
     caseNote: "Case",
     source: "Examples: Klokah · ILRDF e-dictionary",
     resultLabel: "Hangul Output",
-    copy: "Copy", clear: "Clear", live: "Live",
+    copy: "Copy Hangul", clear: "Clear", live: "Live",
     pipeline: "Pipeline steps",
     alpha: "Formosan Latin alphabet",
     alphaNote: "· Digraphs: dr, dj, dh, lr, hl, lh, lj, ng, th, tr, tj, sh, oe, ae\n· Special: ’ / ^ (glottal), ɨ / ʉ\n· Clusters: kl→클, pl→플 · Case (S≠s, R≠r)",
@@ -576,7 +903,7 @@ const I18N = {
     caseNote: "大小寫",
     source: "例句來源：族語E樂園 · 原住民族語言線上辭典",
     resultLabel: "韓文轉換結果",
-    copy: "複製", clear: "清除", live: "即時運作中",
+    copy: "複製韓文", clear: "清除", live: "即時運作中",
     pipeline: "轉換步驟",
     alpha: "原住民語羅馬字字母表",
     alphaNote: "· 雙字母：dr, dj, dh, lr, hl, lh, lj, ng, th, tr, tj, sh, oe, ae\n· 特殊：’ / ^（聲門）、ɨ / ʉ\n· 子音群：kl→클, pl→플 · 大小寫 (S≠s, R≠r)",
@@ -635,41 +962,77 @@ const DIGRAPH_TRIBES = {
 let currentTribe = "unified";
 
 function digraphAllowed(dg) {
-  // 통합: ng만 이중문자로 인정
   if (currentTribe === "unified") return dg === "ng";
   const list = DIGRAPH_TRIBES[dg];
   return list ? list.includes(currentTribe) : false;
 }
 
 function digraphsForTribe(tribe) {
-  if (tribe === "unified") return ["ng"];
+  // 통합: 모든 이중문자 표시(변환은 ng만 결합). 특정 언어: 해당 언어 이중문자만
+  if (tribe === "unified") return Object.keys(DIGRAPH_TRIBES);
   return Object.keys(DIGRAPH_TRIBES).filter(dg => DIGRAPH_TRIBES[dg].includes(tribe));
 }
 
+const TRIBE_KO = {
+  Amis:"아미스", Atayal:"타얄", Paiwan:"파이완", Bunun:"부눈", Puyuma:"피누유마얀",
+  Rukai:"루카이", Tsou:"초우", Saisiyat:"샤이시야트", Yami:"야미", Seediq:"서디크",
+  Truku:"트루쿠", Kavalan:"커발란", Sakizaya:"사키자야", Thao:"사오",
+  Kanakanavu:"카나카나부", Saaroa:"흘라알루아"
+};
+
+function digraphLangLabel(dg) {
+  if (dg === "ng") return "전체";
+  const list = DIGRAPH_TRIBES[dg] || [];
+  return list.map(t => TRIBE_KO[t] || t).join(", ");
+}
+
+// 특수부호 6개만 사용 (언어별)
+// ʼ: 서디크·트루쿠 제외 전 언어
+const SPECIAL_CHARS = {
+  "ʼ": ["Amis","Atayal","Paiwan","Bunun","Puyuma","Rukai","Tsou","Saisiyat","Yami","Kavalan","Sakizaya","Thao","Kanakanavu","Saaroa"],
+  "^": ["Amis"],
+  "ṟ": ["Atayal"],
+  "é": ["Rukai"],
+  "ɨ": ["Rukai"],
+  "ʉ": ["Kanakanavu","Saaroa"]
+};
+
+function specialsForTribe(tribe) {
+  if (tribe === "unified") return Object.keys(SPECIAL_CHARS);
+  return Object.keys(SPECIAL_CHARS).filter(ch => SPECIAL_CHARS[ch].includes(tribe));
+}
+
+function specialLangLabel(ch) {
+  const list = SPECIAL_CHARS[ch] || [];
+  if (ch === "ʼ") return "서디크·트루쿠 제외";
+  return list.map(t => TRIBE_KO[t] || t).join(", ");
+}
+
+/* ========== VARS (새 맵) ========== */
 function getVarsRules() {
-  // 이중문자 (언어별 허용 시에만 포함) — 긴 것 우선
   const digraphs = [
-    ["dr","д"],["dj","џ"],["dh","д"],["lr","л"],["hl","л̥"],["lh","л̥"],
-    ["lj","љ"],["ng","ң"],["th","с"],["tr","т"],["tj","ч"],["sh","ш"],
+    ["dr","д̣"],["dj","ђ"],["dh","ҙ"],["lr","л̣"],["hl","л̥"],["lh","л̥"],
+    ["lj","љ"],["ng","ң"],["th","ҫ"],["tr","т̣"],["tj","ћ"],["sh","ш"],
     ["oe","ө"],["ae","ӕ"]
   ];
   const rules = [];
   for (const [lat, cyr] of digraphs) {
     if (digraphAllowed(lat)) rules.push([lat, cyr]);
   }
+  // 단문자 — 맵 그대로
   rules.push(
-    ["ṟ","р"],
-    ["b","б"],["v","б"],["g","г"],["d","д"],["j","џ"],
-    ["z","џ"],["y","й"],["k","к"],["q","к"],["l","л"],["m","м"],
-    ["n","н"],["h","һ"],["p","п"],["r","р"],["s","с"],["t","т"],
-    ["w","ў"],["f","п"],["x","һ"],["c","ч"],
-    ["^","ӏ"],["'","ӏ"],["’","ӏ"],["ʼ","ӏ"],["`","ӏ"],["∅","ӏ"],
+    ["b","б"],["v","в"],["g","г"],["d","д"],["j","ђ"],["z","з"],
+    ["y","й"],["k","к"],["q","қ"],["l","л"],["m","м"],["n","н"],
+    ["h","һ"],["p","п"],["r","р"],["ṟ","р̱"],["s","с"],["t","т"],
+    ["w","ў"],["f","п"],["x","х"],["c","ц"],
+    ["ʼ","ӏ"],["'","ӏ"],["’","ӏ"],["`","ӏ"],["^","ъ"],["∅","ӏ"],
     ["a","а"],["é","є"],["ē","э"],["i","и"],["o","о"],["u","у"],
     ["ɨ","ы"],["ʉ","ы"]
   );
   if (optEtoE) rules.push(["e","є"]); else rules.push(["e","э"]);
   if (optS) rules.unshift(["S","ш"]); else rules.push(["S","с"]);
-  if (optR) rules.unshift(["R","р"]); else rules.push(["R","р"]);
+  // R: 맵은 ғ, 옵션으로 구분
+  if (optR) rules.unshift(["R","ғ"]); else rules.push(["R","р"]);
   return rules;
 }
 
@@ -679,23 +1042,23 @@ function applyVars(text) {
   while (i < len) {
     let matched = false;
     if (i + 1 < len) {
-      let sub2 = text.substr(i, 2);
-      let sub2Lower = sub2.toLowerCase();
-      for (let [lat, cyr] of VARS_RULES) {
+      const sub2 = text.substr(i, 2);
+      const sub2Lower = sub2.toLowerCase();
+      for (const [lat, cyr] of VARS_RULES) {
         if (lat.length === 2 && lat === sub2) { result += cyr; i += 2; matched = true; break; }
       }
       if (matched) continue;
-      for (let [lat, cyr] of VARS_RULES) {
+      for (const [lat, cyr] of VARS_RULES) {
         if (lat.length === 2 && lat === sub2Lower) { result += cyr; i += 2; matched = true; break; }
       }
       if (matched) continue;
     }
-    let ch = text[i], chLower = ch.toLowerCase();
-    for (let [lat, cyr] of VARS_RULES) {
+    const ch = text[i], chLower = ch.toLowerCase();
+    for (const [lat, cyr] of VARS_RULES) {
       if (lat.length === 1 && lat === ch) { result += cyr; i++; matched = true; break; }
     }
     if (matched) continue;
-    for (let [lat, cyr] of VARS_RULES) {
+    for (const [lat, cyr] of VARS_RULES) {
       if (lat.length === 1 && lat === chLower) { result += cyr; i++; matched = true; break; }
     }
     if (matched) continue;
@@ -705,48 +1068,98 @@ function applyVars(text) {
   return result;
 }
 
+/* ========== REWRITE (새 맵) ========== */
 function applyRewrite(str) {
+  const V = "[аӕєэиоуыө]";
+  const VL = "[чфл̥кпқсштћт̣х]"; // vars vl
+  // 1차 통합 (비슷한 음소 병합)
+  str = str.replace(/[бв]/g, "б");
+  str = str.replace(/[гғ]/g, "г");
+  str = str.replace(/[дд̣ҙ]/g, "д");
+  str = str.replace(/[ђз]/g, "џ");
+  str = str.replace(/[рр̱]/g, "р");
+  str = str.replace(/[сс̧ҫ]/g, "с");
+  str = str.replace(/[тт̣]/g, "т");
+  str = str.replace(/[ћц]/g, "ч");
+  str = str.replace(/л̣/g, "л");  // lr
+  str = str.replace(/[ӏъ]/g, "ӏ");
+  // қ → к (map rewrite keeps қ for coda distinction in transcribe; fold to к for simplicity where needed)
+  // л̥ → һл
   str = str.replace(/л̥/g, "һл");
-  str = str.replace(/([аӕєэиоуыө])ӏ(?=[^аӕєэиоуыө]|$)/g, "$1");
-  str = str.replace(/ӏ+/g, "ӏ");
+  // љ before vowel → лй
+  str = str.replace(new RegExp(`љ(${V})`, "g"), "лй$1").replace(/љ/g, "л");
+  // ш rules
+  str = str.replace(new RegExp(`ш(${V})`, "g"), "сй$1");
+  str = str.replace(/ш(?=\s|$)/g, "си");
+  str = str.replace(/ш/g, "сйу");
+  str = str.replace(/дж/g, "џ");
+  str = str.replace(/ё/g, "йо");
+  str = str.replace(/ю/g, "йу");
+  str = str.replace(/я/g, "йа");
+  str = str.replace(/ь/g, "й");
+
+  const eTarget = optEtoE ? "є" : "э";
+  const VOW = "[аӕєэиоуыө]";
+  str = str.replace(new RegExp(`(^|\\s)е`, "g"), `$1й${eTarget}`);
+  str = str.replace(new RegExp(`(${VOW})е`, "g"), `$1й${eTarget}`);
+  str = str.replace(/е/g, eTarget);
+
+  // geminates
   str = str.replace(/бб/g,"б").replace(/чч/g,"ч").replace(/дд/g,"д")
            .replace(/џџ/g,"џ").replace(/пп/g,"п").replace(/гг/g,"г")
            .replace(/һһ/g,"һ").replace(/кк/g,"к").replace(/лл/g,"л")
            .replace(/љљ/g,"љ").replace(/рр/g,"р").replace(/сс/g,"с")
            .replace(/шш/g,"ш").replace(/тт/g,"т").replace(/ўў/g,"ў");
-  const V = "[аӕєэиоуыө]";
-  str = str.replace(new RegExp(`(${V})мм(${V})`,"g"),"$1м,м$2").replace(/мм/g,"м")
-           .replace(new RegExp(`(${V})нн(${V})`,"g"),"$1н,н$2").replace(/нн/g,"н")
-           .replace(/ңң/g,"ң");
-  str = str.replace(/ўы/g,"уы").replace(/йы/g,"иы").replace(/ӏӏ/g,"ӏ");
-  str = str.replace(new RegExp(`ш(${V})`,"g"),"сй$1")
-           .replace(/ш(?=\b|\s|$)/g,"си").replace(/ш/g,"сйу");
-  const VL = "[чпл̥ксштх]";
-  str = str.replace(new RegExp(`(${V})к(?=${VL})`,"g"),"$1к,")
-           .replace(new RegExp(`(${V})п(?=${VL})`,"g"),"$1п,");
-  str = str.replace(new RegExp(`љ(${V})`,"g"),"лй$1").replace(/љ/g,"л");
-  str = str.replace(/(^|\s)л/g,"$1л;")
-           .replace(new RegExp(`л(?=${V}|й|м,|н,)`,"g"),"л;")
-           .replace(/(?<=,)л/g,"л;");
+  str = str.replace(new RegExp(`(${V})мм(${V})`,"g"),"$1м,м$2").replace(/мм/g,"м");
+  str = str.replace(new RegExp(`(${V})нн(${V})`,"g"),"$1н,н$2").replace(/нн/g,"н");
+  str = str.replace(/ңң/g, "ң");
+  // ў → у only when not forming glide before vowel
+  str = str.replace(new RegExp(`ў(?!${V})`, "g"), "у");
+  // y: keep й before vowel (glide); else → и
+  str = str.replace(/йй/g, "й");
+  str = str.replace(new RegExp(`й(?!${V})`, "g"), "и");
+  str = str.replace(/ӏӏ/g, "ӏ");
+  // identical vowel + glottal collapse
+  for (const v of ["а","ӕ","э","є","о","ө","и","ы","у"]) {
+    str = str.replace(new RegExp(`${v}[ӏъ]?${v}`, "g"), v);
+  }
+  // {@}к{vl} → к,   {@}п{vl} → п,
+  str = str.replace(new RegExp(`(${V})к(?=${VL})`, "g"), "$1к,");
+  str = str.replace(new RegExp(`(${V})п(?=${VL})`, "g"), "$1п,");
+  // л rules
+  str = str.replace(/(^|\s)л/g, "$1л;");
+  str = str.replace(new RegExp(`л(?=${V}|й|м,|н,)`, "g"), "л;");
+  str = str.replace(/(?<=,)л/g, "л;");
   let resL = "";
   for (let i = 0; i < str.length; i++) {
-    if (str[i] === 'л' && str[i+1] !== ';') resL += "л,";
+    if (str[i] === "л" && str[i+1] !== ";") resL += "л,";
     else resL += str[i];
   }
   str = resL;
-  str = str.replace(/(^|\s)м/g,"$1м;").replace(/(^|\s)н/g,"$1н;")
-           .replace(new RegExp(`м(?=${V})`,"g"),"м;")
-           .replace(new RegExp(`н(?=${V})`,"g"),"н;");
+  // m n: 모음 앞 = 초성(;), 그 외(어말·자음 앞) = 받침(,)
+  const Vn = "[аӕєэиоуыө]";
+  str = str.replace(/(^|\s)м/g, "$1м;").replace(/(^|\s)н/g, "$1н;");
+  str = str.replace(new RegExp(`м(?=${Vn})`, "g"), "м;");
+  str = str.replace(new RegExp(`н(?=${Vn})`, "g"), "н;");
   let resMN = "";
   for (let i = 0; i < str.length; i++) {
-    if ((str[i]==='м'||str[i]==='н') && str[i+1]!==';' && str[i+1]!==',') resMN += str[i]+",";
+    if ((str[i]==="м"||str[i]==="н") && str[i+1]!==";" && str[i+1]!==",") resMN += str[i]+",";
     else resMN += str[i];
   }
   str = resMN;
-  str = str.replace(/,,/g,",").replace(/,;/g,"").replace(/,л,/g,"л,")
-           .replace(/,ң,/g,"ң,").replace(/,м,/g,"м,").replace(/,н,/g,"н,").replace(/;/g,"");
+  str = str.replace(/,,/g,",").replace(/,;/g,"")
+           .replace(/,л,/g,"л,").replace(/,ң,/g,"ң,")
+           .replace(/,м,/g,"м,").replace(/,н,/g,"н,")
+           .replace(/;/g,"");
+  str = str.replace(/уы/g,"уы").replace(/иы/g,"иы"); // already normalized
+  // remove glottal between non-vowels leftover
+  str = str.replace(/ӏ+/g, "ӏ");
+  str = str.replace(/([бгдџкқлмнңһпрстчхф])ӏ/g, "$1");
   return str;
 }
+
+/* ========== TRANSCRIBE + 음절 조합 (새 맵) ========== */
+const SON = new Set(["л","м","н","ң","р"]); // sonorants after rewrite
 
 function convertWordToHangul(word) {
   if (!word) return "";
@@ -760,22 +1173,24 @@ function convertWordToHangul(word) {
     }
   }
 
-  // include џ љ ң һ etc. outside basic а-я
-  const CYR = /[а-яА-Яөєӕўңһл̥ӏ;,џљ]/;
+  const isCyr = (c) => /[абвгғдеёђҙжзийкқлљмнңопрстуўфхцчшџыэюяөєӕһӏ,;]/.test(c);
 
   while (i < len) {
-    let ch = word[i];
-    let isStart = (i === 0);
+    const ch = word[i];
+    const isStart = (i === 0 || /\s/.test(word[i-1]));
+    const next = word[i+1] || "";
+    const nextIsVowel = /[аӕєэиоуыө]/.test(next);
+    const nextIsSon = SON.has(next);
 
-    if (!CYR.test(ch)) {
-      flush(); result += ch; i++; continue;
-    }
+    if (!isCyr(ch)) { flush(); result += ch; i++; continue; }
 
-    let sub2 = word.substr(i, 2);
-    let glideMap = {
-      "ўа":"ㅘ","ўє":"ㅞ","ўэ":"ㅝ","ўо":"ㅝ","ўи":"ㅟ","ўу":"ㅜ","ўы":"ㅡ",
-      "йа":"ㅑ","йє":"ㅖ","йэ":"ㅕ","йо":"ㅛ","йу":"ㅠ","йи":"ㅣ","йы":"ㅢ"
+    // glides 2-char
+    const sub2 = word.substr(i, 2);
+    const glideMap = {
+      "ўа":"ㅘ","ўє":"ㅞ","ўэ":"ㅝ","ўо":"ㅝ",
+      "йа":"ㅑ","йє":"ㅖ","йэ":"ㅕ","йо":"ㅛ","йу":"ㅠ"
     };
+    // note: ў already rewritten to у in rewrite; keep for safety
     if (glideMap[sub2]) {
       if (pendingVowel) flush();
       pendingVowel = glideMap[sub2];
@@ -783,7 +1198,7 @@ function convertWordToHangul(word) {
       i += 2; continue;
     }
 
-    let vowelMap = {"а":"ㅏ","ӕ":"ㅐ","э":"ㅓ","є":"ㅔ","о":"ㅗ","ө":"ㅚ","и":"ㅣ","ы":"ㅡ","у":"ㅜ"};
+    const vowelMap = {"а":"ㅏ","ӕ":"ㅐ","э":"ㅓ","є":"ㅔ","о":"ㅗ","ө":"ㅚ","и":"ㅣ","ы":"ㅡ","у":"ㅜ"};
     if (vowelMap[ch]) {
       if (pendingVowel) flush();
       pendingVowel = vowelMap[ch];
@@ -791,76 +1206,103 @@ function convertWordToHangul(word) {
       i++; continue;
     }
 
-    if (ch === 'й') {
+    if (ch === "й") {
       if (pendingVowel !== null) { flush(); pendingOnset = "ㅇ"; pendingVowel = "ㅣ"; }
       else if (pendingOnset !== null) pendingVowel = "ㅣ";
       else { pendingOnset = "ㅇ"; pendingVowel = "ㅣ"; }
       i++; continue;
     }
-    if (ch === 'ў') {
+    if (ch === "ў") {
       if (pendingVowel !== null) { flush(); pendingOnset = "ㅇ"; pendingVowel = "ㅜ"; }
       else if (pendingOnset !== null) pendingVowel = "ㅜ";
       else { pendingOnset = "ㅇ"; pendingVowel = "ㅜ"; }
       i++; continue;
     }
-    if (ch === 'ӏ') { i++; continue; }
+    if (ch === "ӏ") { i++; continue; }
 
-    if (word.substr(i,2) === "к,") {
-      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㄱ"; flush(); }
-      else result += "크";
+    // explicit coda markers ", "
+    const codaPairs = {
+      "к,":"ㄱ","п,":"ㅂ","л,":"ㄹ","м,":"ㅁ","н,":"ㄴ",
+      "б,":"ㅂ","г,":"ㄱ","д,":"ㅅ","қ,":"ㄱ","ф,":"ㅂ"
+    };
+    if (codaPairs[sub2]) {
+      if (pendingOnset !== null) {
+        if (!pendingVowel) pendingVowel = "ㅡ";
+        pendingCoda = codaPairs[sub2];
+        flush();
+      } else {
+        // standalone
+        const fill = {"ㄱ":"크","ㅂ":"프","ㄹ":"르","ㅁ":"므","ㄴ":"느","ㅅ":"스"}[codaPairs[sub2]] || "";
+        result += fill;
+      }
       i += 2; continue;
     }
-    if (word.substr(i,2) === "п,") {
-      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㅂ"; flush(); }
-      else result += "프";
-      i += 2; continue;
-    }
-    if (word.substr(i,2) === "л,") {
-      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㄹ"; flush(); }
-      else result += "르";
-      i += 2; continue;
-    }
-    if (word.substr(i,2) === "м,") {
-      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㅁ"; flush(); }
-      else result += "므";
-      i += 2; continue;
-    }
-    if (word.substr(i,2) === "н,") {
-      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㄴ"; flush(); }
-      else result += "느";
-      i += 2; continue;
-    }
-    if (ch === 'ң') {
-      if (pendingOnset !== null) { if (!pendingVowel) pendingVowel="ㅡ"; pendingCoda="ㅇ"; flush(); }
-      else result += "응";
+
+    if (ch === "ң") {
+      if (pendingOnset !== null) {
+        if (!pendingVowel) pendingVowel = "ㅡ";
+        pendingCoda = "ㅇ";
+        flush();
+      } else result += "응";
       i++; continue;
     }
 
-    if (ch === 'л') {
+    // л rules from transcribe
+    if (ch === "л") {
       if (isStart) {
         if (pendingOnset !== null || pendingVowel !== null) flush();
         pendingOnset = "ㄹ";
       } else {
         if (pendingOnset !== null) {
           if (!pendingVowel) pendingVowel = "ㅡ";
-          pendingCoda = "ㄹ"; flush();
+          pendingCoda = "ㄹ";
+          flush();
         } else if (pendingVowel !== null) {
-          pendingCoda = "ㄹ"; flush();
+          pendingCoda = "ㄹ";
+          flush();
         }
         pendingOnset = "ㄹ";
       }
       i++; continue;
     }
 
-    let onsetMap = {"б":"ㅂ","г":"ㄱ","д":"ㄷ","к":"ㅋ","м":"ㅁ","н":"ㄴ","һ":"ㅎ","п":"ㅍ","р":"ㄹ","с":"ㅅ","т":"ㅌ","ч":"ㅊ","џ":"ㅈ"};
+    // onset consonants with {@}/{son}/coda contexts from map
+    // б{@}|б{son} → ㅂ ; б, → -ㅂ
+    const onsetWhenVowelOrSon = {
+      "б":"ㅂ","г":"ㄱ","д":"ㄷ","к":"ㅋ","қ":"ㅋ","п":"ㅍ","ф":"ㅍ","х":"ㅎ"
+    };
+    if (onsetWhenVowelOrSon[ch] && (nextIsVowel || nextIsSon)) {
+      if (pendingOnset !== null && pendingVowel !== null) flush();
+      else if (pendingOnset !== null && pendingVowel === null) flush();
+      pendingOnset = onsetWhenVowelOrSon[ch];
+      i++; continue;
+    }
+    // default onset map
+    const onsetMap = {
+      "б":"ㅂ","г":"ㄱ","д":"ㄷ","к":"ㅋ","қ":"ㅋ","м":"ㅁ","н":"ㄴ",
+      "һ":"ㅎ","п":"ㅍ","р":"ㄹ","с":"ㅅ","т":"ㅌ","ч":"ㅊ","џ":"ㅈ",
+      "ф":"ㅍ","х":"ㅎ"
+    };
     if (onsetMap[ch] !== undefined) {
+      // if followed by nothing useful and we have pending syllable, treat as coda where map says
+      if (pendingOnset !== null && pendingVowel !== null && !nextIsVowel && !nextIsSon) {
+        // possible coda from map: б,→ㅂ already handled; plain stops before consonant
+        const codaFromStop = {"б":"ㅂ","г":"ㄱ","д":"ㅅ","к":"ㄱ","қ":"ㄱ","п":"ㅂ","ф":"ㅂ"};
+        if (codaFromStop[ch]) {
+          pendingCoda = codaFromStop[ch];
+          flush();
+          i++; continue;
+        }
+      }
       if (pendingOnset !== null && pendingVowel !== null) flush();
       else if (pendingOnset !== null && pendingVowel === null) flush();
       pendingOnset = onsetMap[ch];
       i++; continue;
     }
 
-    flush(); result += ch; i++;
+    flush();
+    result += ch;
+    i++;
   }
   flush();
   return result;
@@ -868,10 +1310,10 @@ function convertWordToHangul(word) {
 
 function convertFormosanToHangul(inputText) {
   if (!inputText || !inputText.trim()) return { step1:"", step2:"", output:"" };
-  let step1 = applyVars(inputText);
-  let step2 = applyRewrite(step1);
-  let words = step2.split(/(\s+)/);
-  let converted = words.map(w => convertWordToHangul(w));
+  const step1 = applyVars(inputText);
+  const step2 = applyRewrite(step1);
+  const words = step2.split(/(\s+)/);
+  const converted = words.map(w => convertWordToHangul(w));
   return { step1, step2, output: converted.join("") };
 }
 
@@ -938,7 +1380,10 @@ document.addEventListener("DOMContentLoaded", () => {
     alphaGrid.appendChild(div);
   });
 
-  // special char keyboard
+  // special + digraph keyboard
+  const charKb = document.getElementById("charKb");
+  const digraphKb = document.getElementById("digraphKb");
+
   function insertAtCursor(ch) {
     const start = input.selectionStart;
     const end = input.selectionEnd;
@@ -949,34 +1394,76 @@ document.addEventListener("DOMContentLoaded", () => {
     fromExample = false;
     update();
   }
-  document.querySelectorAll("#charKb button").forEach(btn => {
-    btn.addEventListener("click", () => insertAtCursor(btn.dataset.ch));
-  });
 
-  const digraphKb = document.getElementById("digraphKb");
+  function updateSpecialKeyboard(tribe) {
+    const t = tribe || currentTribe;
+    const chars = specialsForTribe(t);
+    charKb.innerHTML = "";
+    if (!chars.length) {
+      charKb.style.display = "none";
+      return;
+    }
+    charKb.style.display = "flex";
+    if (t === "unified") {
+      const tip = document.createElement("span");
+      tip.style.cssText = "font-size:0.7rem;color:#64748b;margin-right:0.35rem;align-self:center";
+      tip.textContent = "특수부호(호버=사용 언어)";
+      charKb.appendChild(tip);
+    }
+    chars.forEach(ch => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.dataset.ch = ch;
+      btn.textContent = ch;
+      btn.title = ch + " · " + specialLangLabel(ch);
+      btn.addEventListener("click", () => insertAtCursor(ch));
+      charKb.appendChild(btn);
+    });
+  }
+
   function updateDigraphKeyboard(tribe) {
-    const dgs = digraphsForTribe(tribe || currentTribe);
+    const t = tribe || currentTribe;
+    const dgs = digraphsForTribe(t);
     digraphKb.innerHTML = "";
     if (!dgs.length) {
       digraphKb.style.display = "none";
       return;
     }
     digraphKb.style.display = "flex";
+    if (t === "unified") {
+      const tip = document.createElement("span");
+      tip.style.cssText = "font-size:0.7rem;color:#64748b;margin-right:0.35rem;align-self:center";
+      tip.textContent = "이중문자(호버=사용 언어)";
+      digraphKb.appendChild(tip);
+    }
     dgs.forEach(dg => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.dataset.ch = dg;
       btn.textContent = dg;
-      btn.title = "이중문자: " + dg;
+      const langs = digraphLangLabel(dg);
+      btn.title = t === "unified"
+        ? (dg + " → " + (langs || "—") + (dg === "ng" ? " (통합에서 결합)" : " (통합에서 2글자 처리)"))
+        : ("이중문자: " + dg + " · " + langs);
       btn.addEventListener("click", () => insertAtCursor(dg));
       digraphKb.appendChild(btn);
     });
   }
-  updateDigraphKeyboard("unified");
+
+  function updateKeyboards(tribe) {
+    updateSpecialKeyboard(tribe);
+    updateDigraphKeyboard(tribe);
+  }
+  updateKeyboards("unified");
 
   function applyI18n() {
     const t = I18N[uiLang];
-    document.getElementById("t-title").textContent = t.title;
+    const titleEl = document.getElementById("t-title");
+    if (titleEl) {
+      if (uiLang === "ko") titleEl.innerHTML = '대만 원주민어 <span style="color:#D96855">→</span> 한글 변환기';
+      else if (uiLang === "en") titleEl.innerHTML = 'Formosan <span style="color:#D96855">→</span> Hangul Converter';
+      else titleEl.innerHTML = '台灣原住民語 <span style="color:#D96855">→</span> 韓文轉換器';
+    }
     document.getElementById("t-inputLabel").textContent = t.inputLabel;
     document.getElementById("t-eLabel").textContent = t.eLabel;
     document.getElementById("t-eLabel2").textContent = t.eLabel2;
@@ -1106,7 +1593,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const t = I18N[uiLang];
     sState.textContent = optS ? t.sOn : t.sOff;
     rState.textContent = optR ? t.rOn : t.rOff;
-    if (typeof updateDigraphKeyboard === "function") updateDigraphKeyboard(currentTribe);
+    if (typeof updateKeyboards === "function") updateKeyboards(currentTribe); else if (typeof updateDigraphKeyboard === "function") updateDigraphKeyboard(currentTribe);
   }
 
   let lastIdx = -1;
