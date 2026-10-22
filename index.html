@@ -1152,9 +1152,9 @@ function applyRewrite(str) {
            .replace(/,м,/g,"м,").replace(/,н,/g,"н,")
            .replace(/;/g,"");
   str = str.replace(/уы/g,"уы").replace(/иы/g,"иы"); // already normalized
-  // remove glottal between non-vowels leftover
+  // keep glottal stops (ʼ / ' / ^) so they can force syllable breaks in transcribe
   str = str.replace(/ӏ+/g, "ӏ");
-  str = str.replace(/([бгдџкқлмнңһпрстчхф])ӏ/g, "$1");
+  // do NOT strip ӏ after consonants — needed for CʼV → separate syllables (e.g. cʼu → 츠우)
   return str;
 }
 
@@ -1218,7 +1218,15 @@ function convertWordToHangul(word) {
       else { pendingOnset = "ㅇ"; pendingVowel = "ㅜ"; }
       i++; continue;
     }
-    if (ch === "ӏ") { i++; continue; }
+    // glottal stop (ʼ / ' / ^ → ӏ): force syllable break when between consonant and vowel
+    // e.g. cʼuliʼ → 츠울리 (not 출리)
+    if (ch === "ӏ") {
+      if (pendingOnset !== null && pendingVowel === null) {
+        pendingVowel = "ㅡ";
+        flush();
+      }
+      i++; continue;
+    }
 
     // explicit coda markers ", "
     const codaPairs = {
